@@ -1,15 +1,18 @@
+import { formatBalance } from "@/util/format-balance";
 import Image from "next/image";
 
 type EnterWagerProps = {
   value: string;
   handleSetWager: (wager: string) => void;
   minimumBet: number;
+  balance: string;
 };
 
 export default function EnterWager({
   value,
   handleSetWager,
   minimumBet,
+  balance,
 }: EnterWagerProps) {
   return (
     <div className="flex flex-col gap-8">
@@ -31,9 +34,17 @@ export default function EnterWager({
           />
         </div>
 
-        <p className="text-right font-normal text-[14px] mr-4">
-          minimum bet: {minimumBet} sei
-        </p>
+        <div>
+          <p className="text-right font-normal text-[14px] mr-4">
+            <span className="font-medium">minimum bet: </span>
+            {minimumBet} sei
+          </p>
+
+          <p className="text-right font-normal text-[14px] mr-4">
+            <span className="font-medium">your balance: </span>
+            {balance ? formatBalance(balance) : "-"} sei
+          </p>
+        </div>
       </div>
     </div>
   );

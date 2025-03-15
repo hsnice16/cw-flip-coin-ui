@@ -3,6 +3,8 @@
 import { useState } from "react";
 import ChooseInput from "./ChooseInput";
 import EnterWager from "./EnterWager";
+import { useAccount } from "@/context/AccountContext";
+import { useToasts } from "@/context/ToastsContext";
 
 export default function Input() {
   const [state, setState] = useState({
@@ -11,20 +13,33 @@ export default function Input() {
   });
 
   const minimumBet = 5;
-  const [error, setError] = useState("");
+  const { balance } = useAccount();
+  const { setToast } = useToasts();
 
   const handleSetIsHead = (isHead: boolean) => {
     setState((prev) => ({ ...prev, isHead }));
   };
 
   const handleSetWager = (wager: string) => {
-    setError("");
     setState((prev) => ({ ...prev, wager }));
   };
 
   const handlePlaceBet = () => {
     if (Number(state.wager) < minimumBet) {
-      setError("place minimum bet");
+      setToast({
+        msg: "Enter Wager: Place minimum bet",
+        type: "error",
+      });
+
+      return;
+    }
+
+    if (Number(state.wager) > Number(balance)) {
+      setToast({
+        msg: "Enter Wager: Amount exceeded the wallet balance",
+        type: "error",
+      });
+
       return;
     }
 
@@ -38,14 +53,14 @@ export default function Input() {
         value={state.wager}
         handleSetWager={handleSetWager}
         minimumBet={minimumBet}
+        balance={balance}
       />
 
       <button
-        className="bg-primary text-background w-[140px] h-[34px] font-medium text-[16px] rounded-sm cursor-pointer relative"
+        className="bg-primary text-background w-[140px] h-[34px] font-medium text-[16px] rounded-sm cursor-pointer"
         onClick={handlePlaceBet}
       >
         place bet
-        <p className="text-[14px] text-error absolute mt-4">{error}</p>
       </button>
     </div>
   );
