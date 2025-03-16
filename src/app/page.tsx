@@ -4,6 +4,7 @@ import ConnectWallet from "@/component/ConnectWallet";
 import History from "@/component/History";
 import Input from "@/component/Input";
 import LastBet from "@/component/LastBet";
+import Pause from "@/component/Pause";
 import Play from "@/component/Play";
 import Toasts from "@/component/Toasts";
 import { pressStart2P } from "@/constant/font";
@@ -14,6 +15,7 @@ export default function Page() {
   return (
     <ToastsContextProvider>
       <AccountContextProvider>
+        <Pause />
         <Toasts />
 
         <div className="flex flex-col gap-12 items-start">

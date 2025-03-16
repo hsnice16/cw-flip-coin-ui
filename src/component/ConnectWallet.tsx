@@ -4,6 +4,8 @@ import { TESTNET_CHAIN_ID } from "@/constant/value";
 import { useToasts } from "@/context/ToastsContext";
 import { useState } from "react";
 import { useAccount } from "@/context/AccountContext";
+import { BrowserProvider } from "ethers";
+import { getWasmPrecompileEthersV6Contract } from "@/util/contract";
 
 import {
   getAccount,
@@ -25,6 +27,7 @@ export default function ConnectWallet() {
     showAccountInfo,
     wallet: _wallet,
     setWallet,
+    setContract,
   } = useAccount();
 
   const handleConnectWallet = async () => {
@@ -45,6 +48,12 @@ export default function ConnectWallet() {
 
         const account = await getAccount(wallet);
         setAccount(account);
+
+        const provider = new BrowserProvider(wallet);
+        const signer = await provider.getSigner();
+
+        const contract = getWasmPrecompileEthersV6Contract(signer);
+        setContract(contract);
       } catch (err) {
         setToast({
           msg: (err as Error).message,
@@ -74,9 +83,11 @@ export default function ConnectWallet() {
   const handleDisconnect = async () => {
     try {
       await revokePermission(_wallet);
+
       setAccount("");
       setShowAccountInfo(false);
       setWallet(null);
+      setContract(undefined);
     } catch (err) {
       setToast({
         msg: "Disconnect: " + (err as Error).message,
@@ -100,9 +111,11 @@ export default function ConnectWallet() {
         }`}
       >
         <div className="flex gap-2">
-          <p className="text-[14px] max-w-[150px] overflow-auto bg-background py-1 px-2 rounded-sm">
-            <pre>{account}</pre>
-          </p>
+          <pre>
+            <p className="text-[14px] max-w-[150px] overflow-auto bg-background py-1 px-2 rounded-sm">
+              {account}
+            </p>
+          </pre>
           <button
             className="text-[12px] cursor-pointer"
             onClick={handleCopyClick}

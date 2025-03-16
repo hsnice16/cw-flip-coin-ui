@@ -37,7 +37,7 @@ export default function EnterWager({
         <div>
           <p className="text-right font-normal text-[14px] mr-4">
             <span className="font-medium">minimum bet: </span>
-            {minimumBet} sei
+            {minimumBet < 0 ? "-" : formatBalance(String(minimumBet))} sei
           </p>
 
           <p className="text-right font-normal text-[14px] mr-4">
