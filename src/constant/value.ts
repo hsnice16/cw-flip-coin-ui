@@ -72,4 +72,4 @@ export const WASM_PRECOMPILE_ABI = [
     stateMutability: "view",
     type: "function",
   },
-] as const;
+];

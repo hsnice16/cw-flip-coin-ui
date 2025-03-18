@@ -1,29 +1,16 @@
 import { CW_DECIMALS } from "@/constant/value";
 import { useAccount } from "@/context/AccountContext";
-import { useToasts } from "@/context/ToastsContext";
-import { HistoryLog } from "@/types";
-import { getHistoryLogs } from "@/util/contract";
 import { getWalletName } from "@/util/wallet";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 
 export default function History() {
-  const { contract } = useAccount();
-  const { setToast } = useToasts();
-  const [history, setHistory] = useState<HistoryLog[]>([]);
+  const { contract, history, fetchHistory } = useAccount();
 
   useEffect(() => {
-    (async function fetchHistory() {
-      try {
-        const historyLogs = await getHistoryLogs(contract);
-        setHistory(historyLogs);
-      } catch (err) {
-        setToast({
-          msg: "Fetch History: " + (err as Error).message,
-          type: "error",
-        });
-      }
-    })();
+    if (contract) {
+      fetchHistory();
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contract]);

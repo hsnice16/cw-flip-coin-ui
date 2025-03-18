@@ -14,7 +14,7 @@ export default function Input() {
     wager: "",
   });
 
-  const { balance, contract } = useAccount();
+  const { balance, contract, fetchHistory } = useAccount();
   const { setToast } = useToasts();
   const [minimumBet, setMinimumBet] = useState(-1);
   const [showYouWon, setShowYouWon] = useState(false);
@@ -63,6 +63,9 @@ export default function Input() {
     }
 
     await flip(contract, state.isHead, Number(state.wager));
+
+    handleSetWager("")
+    fetchHistory();
   };
 
   const isPlaceBetDisabled = !state.wager;

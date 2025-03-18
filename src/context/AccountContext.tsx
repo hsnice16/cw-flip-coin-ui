@@ -15,6 +15,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { HistoryLog } from "@/types";
+import { getHistoryLogs } from "@/util/contract";
 
 export type AccountContextType = {
   account: string;
@@ -27,6 +29,9 @@ export type AccountContextType = {
   contract: Contract | undefined;
   setContract: Dispatch<SetStateAction<Contract | undefined>>;
   fetchBalance: () => Promise<void>;
+  history: HistoryLog[];
+  setHistory: Dispatch<SetStateAction<HistoryLog[]>>;
+  fetchHistory: () => Promise<void>;
 };
 
 const AccountContext = createContext<AccountContextType>({
@@ -40,6 +45,9 @@ const AccountContext = createContext<AccountContextType>({
   contract: undefined,
   setContract: () => {},
   fetchBalance: async () => {},
+  history: [],
+  setHistory: () => {},
+  fetchHistory: async () => {},
 });
 
 export default function AccountContextProvider({
@@ -53,8 +61,22 @@ export default function AccountContextProvider({
 
   const { setToast } = useToasts();
   const balanceIntervalIdRef = useRef<NodeJS.Timeout>(undefined);
-  const [balance, setBalance] = useState("");
   const [contract, setContract] = useState<Contract>();
+
+  const [balance, setBalance] = useState("");
+  const [history, setHistory] = useState<HistoryLog[]>([]);
+
+  async function fetchHistory() {
+    try {
+      const historyLogs: HistoryLog[] = await getHistoryLogs(contract);
+      setHistory(historyLogs.reverse());
+    } catch (err) {
+      setToast({
+        msg: "Fetch History: " + (err as Error).message,
+        type: "error",
+      });
+    }
+  }
 
   async function fetchBalance() {
     if (wallet && account) {
@@ -64,10 +86,14 @@ export default function AccountContextProvider({
         const balance = Number(hexBalance) / 10 ** EVM_DECIMALS;
         setBalance(String(balance));
       } catch (err) {
-        setToast({
-          msg: "Balance: " + (err as Error).message,
-          type: "error",
-        });
+        if (
+          !(err as Error).message.toLowerCase().includes("is not valid json")
+        ) {
+          setToast({
+            msg: "Balance: " + (err as Error).message,
+            type: "error",
+          });
+        }
       }
     } else {
       setBalance("");
@@ -81,7 +107,7 @@ export default function AccountContextProvider({
     return () => clearInterval(balanceIntervalIdRef.current);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallet, account]);
+  }, [wallet, account, contract]);
 
   const value = {
     account,
@@ -94,6 +120,9 @@ export default function AccountContextProvider({
     contract,
     setContract,
     fetchBalance,
+    history,
+    setHistory,
+    fetchHistory,
   };
 
   return (

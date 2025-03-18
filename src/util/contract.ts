@@ -1,6 +1,7 @@
 import {
   CW_DECIMALS,
   CW_FLIP_COIN_CONTRACT,
+  EVM_DECIMALS,
   WASM_PRECOMPILE_ABI,
   WASM_PRECOMPILE_ADDRESS,
 } from "@/constant/value";
@@ -93,12 +94,13 @@ export async function flip(
     CW_FLIP_COIN_CONTRACT,
     toUtf8Bytes(JSON.stringify(executeMsg)),
     toUtf8Bytes(
-      JSON.stringify([{ amount: wager * 10 ** CW_DECIMALS, denom: "usei" }])
-    )
+      JSON.stringify([
+        { amount: String(wager * 10 ** CW_DECIMALS), denom: "usei" },
+      ])
+    ),
+    { gasLimit: 1000_000, value: String(wager * 10 ** EVM_DECIMALS) }
   );
 
-  console.log("executeResponse-before", executeResponse);
-
   await executeResponse.wait();
-  console.log("executeResponse-after", executeResponse);
+  console.log("executeResponse", executeResponse);
 }
