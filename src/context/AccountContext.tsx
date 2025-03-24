@@ -125,6 +125,8 @@ export default function AccountContextProvider({
       if (settledLogs.length === DEFAULT_HISTORY_LOG_LIMIT) {
         offsetRef.current += DEFAULT_HISTORY_LOG_LIMIT;
         await fetchHistory();
+      } else {
+        offsetRef.current += settledLogs.length;
       }
 
       if (!lastBet.player) {

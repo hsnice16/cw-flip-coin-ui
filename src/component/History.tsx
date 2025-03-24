@@ -1,11 +1,12 @@
 import { CW_DECIMALS } from "@/constant/value";
 import { useAccount } from "@/context/AccountContext";
 import { getWalletName } from "@/util/wallet";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 
 export default function History() {
   const { contract, history, fetchHistory } = useAccount();
+  const tableRef = useRef<HTMLTableElement>(null);
 
   useEffect(() => {
     if (contract) {
@@ -15,12 +16,21 @@ export default function History() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contract]);
 
+  useEffect(() => {
+    if (tableRef.current) {
+      tableRef.current.scrollTop = tableRef.current.scrollHeight;
+    }
+  }, [history.length]);
+
   return (
-    <div className="flex flex-col gap-4 self-end min-h-[314px] max-h-[514px] overflow-auto">
+    <div className="flex flex-col gap-4 self-end min-h-[314px]">
       <h2 className="font-bold text-[26px]">history log</h2>
 
-      <table>
-        <thead className="font-semibold text-[18px]">
+      <table
+        className="max-h-[514px] overflow-auto block scroll-smooth"
+        ref={tableRef}
+      >
+        <thead className="font-semibold text-[18px] sticky top-0 bg-background">
           <tr>
             <th className="w-[102px] text-left">player</th>
             <th className="w-[52px] text-left">did_win</th>
