@@ -107,10 +107,13 @@ export default function ConnectWallet() {
   return (
     <div className="relative">
       <button
-        className="underline cursor-pointer text-[14px] font-normal"
+        className="text-[14px] font-normal"
         onClick={account ? () => setShowAccountInfo(true) : handleConnectWallet}
       >
-        [{account ? getWalletName(account) : "connect wallet"}]
+        <span className="underline cursor-pointer">
+          [{account ? getWalletName(account) : "connect wallet"}]
+        </span>{" "}
+        (#testnet)
       </button>
 
       <div
