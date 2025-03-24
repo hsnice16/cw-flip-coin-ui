@@ -16,7 +16,7 @@
   --lb-gray: #8caba9;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-pause-background: var(--pause-background);
   --color-secondary-bg: var(--secondary-background);
@@ -30,6 +30,18 @@
   --color-lb-maroon: var(--lb-maroon);
   --color-lb-crimson: var(--lb-crimson);
   --color-lb-gray: var(--lb-gray);
+
+  --animate-wiggle: wiggle 0.2s 3;
+
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+    50% {
+      transform: rotate(3deg);
+    }
+  }
 }
 
 @layer base {

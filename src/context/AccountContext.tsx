@@ -2,8 +2,8 @@
 
 import { getBalance } from "@/util/wallet";
 import { useToasts } from "./ToastsContext";
-import { EVM_DECIMALS } from "@/constant/value";
 import { Contract } from "ethers";
+import { DEFAULT_HISTORY_LOG_LIMIT, EVM_DECIMALS } from "@/constant/value";
 
 import {
   createContext,
@@ -15,8 +15,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { HistoryLog } from "@/types";
-import { getHistoryLogs } from "@/util/contract";
+
+import { HistoryLog, LastBet } from "@/types";
+import { getEvmAddress, getHistoryLogs } from "@/util/contract";
 
 export type AccountContextType = {
   account: string;
@@ -28,10 +29,16 @@ export type AccountContextType = {
   balance: string;
   contract: Contract | undefined;
   setContract: Dispatch<SetStateAction<Contract | undefined>>;
+  addrContract: Contract | undefined;
+  setAddrContract: Dispatch<SetStateAction<Contract | undefined>>;
   fetchBalance: () => Promise<void>;
   history: HistoryLog[];
   setHistory: Dispatch<SetStateAction<HistoryLog[]>>;
   fetchHistory: () => Promise<void>;
+  lastBet: LastBet;
+  setLastBet: Dispatch<SetStateAction<LastBet>>;
+  flipStatus: string;
+  setFlipStatus: Dispatch<SetStateAction<string>>;
 };
 
 const AccountContext = createContext<AccountContextType>({
@@ -44,10 +51,16 @@ const AccountContext = createContext<AccountContextType>({
   balance: "",
   contract: undefined,
   setContract: () => {},
+  addrContract: undefined,
+  setAddrContract: () => {},
   fetchBalance: async () => {},
   history: [],
   setHistory: () => {},
   fetchHistory: async () => {},
+  lastBet: { wager: 0, did_win: false, player: "", flip_id: "" },
+  setLastBet: () => {},
+  flipStatus: "",
+  setFlipStatus: () => {},
 });
 
 export default function AccountContextProvider({
@@ -62,14 +75,71 @@ export default function AccountContextProvider({
   const { setToast } = useToasts();
   const balanceIntervalIdRef = useRef<NodeJS.Timeout>(undefined);
   const [contract, setContract] = useState<Contract>();
+  const [addrContract, setAddrContract] = useState<Contract>();
 
   const [balance, setBalance] = useState("");
   const [history, setHistory] = useState<HistoryLog[]>([]);
+  const offsetRef = useRef(0);
 
+  const [flipStatus, setFlipStatus] = useState("");
+  const [lastBet, setLastBet] = useState<LastBet>({
+    wager: 0,
+    did_win: false,
+    player: "",
+    flip_id: "",
+  });
+
+  // Fetch History Function
   async function fetchHistory() {
     try {
-      const historyLogs: HistoryLog[] = await getHistoryLogs(contract);
-      setHistory(historyLogs.reverse());
+      const historyLogs: HistoryLog[] = await getHistoryLogs(
+        contract,
+        offsetRef.current
+      );
+
+      const promises = await Promise.allSettled(
+        historyLogs.map(async (historyLog) => {
+          const evmAddress = await getEvmAddress(
+            addrContract,
+            historyLog.user_address
+          );
+
+          return { ...historyLog, user_address: evmAddress };
+        })
+      );
+
+      // Filter Settled Logs
+      const settledLogs = promises.reduce((acc: HistoryLog[], curr) => {
+        if (curr.status === "fulfilled") {
+          return [...acc, curr.value];
+        }
+
+        return acc;
+      }, []);
+
+      // SetHistory
+      setHistory((prev) => {
+        return [...prev, ...settledLogs];
+      });
+
+      if (settledLogs.length === DEFAULT_HISTORY_LOG_LIMIT) {
+        offsetRef.current += DEFAULT_HISTORY_LOG_LIMIT;
+        await fetchHistory();
+      }
+
+      if (!lastBet.player) {
+        const history = settledLogs[settledLogs.length - 1];
+
+        if (history) {
+          // Initialize Last Bet
+          setLastBet({
+            wager: history.wager ?? 0,
+            did_win: history.did_win ?? false,
+            player: history.user_address,
+            flip_id: history.flip_id,
+          });
+        }
+      }
     } catch (err) {
       setToast({
         msg: "Fetch History: " + (err as Error).message,
@@ -78,6 +148,7 @@ export default function AccountContextProvider({
     }
   }
 
+  // Fetch Balance Function
   async function fetchBalance() {
     if (wallet && account) {
       try {
@@ -100,6 +171,7 @@ export default function AccountContextProvider({
     }
   }
 
+  // UseEffect to Fetch Balance in an Interval of 2 seconds
   useEffect(() => {
     fetchBalance();
     balanceIntervalIdRef.current = setInterval(fetchBalance, 2 * 1000); // fetch new balance every 2 seconds
@@ -119,10 +191,16 @@ export default function AccountContextProvider({
     balance,
     contract,
     setContract,
+    addrContract,
+    setAddrContract,
     fetchBalance,
     history,
     setHistory,
     fetchHistory,
+    lastBet,
+    setLastBet,
+    flipStatus,
+    setFlipStatus,
   };
 
   return (

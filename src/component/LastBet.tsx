@@ -1,8 +1,16 @@
+import { CW_DECIMALS } from "@/constant/value";
+import { useAccount } from "@/context/AccountContext";
 import { getRandomInt } from "@/util/get-random-int";
+import { getWalletName } from "@/util/wallet";
 import Image from "next/image";
 
 export default function LastBet() {
   const randomInt = getRandomInt(3);
+  const { lastBet } = useAccount();
+
+  if (!lastBet.player) {
+    return null;
+  }
 
   return (
     <div
@@ -18,7 +26,8 @@ export default function LastBet() {
           : randomInt === 1
           ? "text-foreground"
           : "text-background"
-      } rounded-sm px-2 py-1 w-1/3 absolute bottom-8 left-10`}
+      } rounded-sm px-2 py-1 w-1/3 absolute bottom-8 left-10 animate-wiggle`}
+      key={lastBet.flip_id}
     >
       {randomInt === 0 ? (
         <Image
@@ -45,9 +54,16 @@ export default function LastBet() {
 
       <p className="text-[14px]">
         <span className="font-semibold">last bet: </span>
-        player <span className="font-semibold">abmnyz, </span>
-        did_win <span className="font-semibold">yes, </span>
-        wager <span className="font-semibold">4 sei</span>
+        player{" "}
+        <span className="font-semibold">{getWalletName(lastBet.player)}, </span>
+        did_win{" "}
+        <span className="font-semibold">
+          {lastBet.did_win ? "yes" : "no"},{" "}
+        </span>
+        wager{" "}
+        <span className="font-semibold">
+          {lastBet.wager / 10 ** CW_DECIMALS} sei
+        </span>
       </p>
     </div>
   );

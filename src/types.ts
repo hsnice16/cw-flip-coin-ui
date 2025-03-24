@@ -6,3 +6,10 @@ export interface HistoryLog {
   flip_id: string;
   bet_is_head: boolean;
 }
+
+export type LastBet = {
+  wager: number;
+  did_win: boolean;
+  player: string;
+  flip_id: string;
+};

@@ -6,7 +6,7 @@ import EnterWager from "./EnterWager";
 import { useAccount } from "@/context/AccountContext";
 import { useToasts } from "@/context/ToastsContext";
 import { flip, getMinimumBet } from "@/util/contract";
-import YouWon from "./YouWon";
+import FlipStatus from "./FlipStatus";
 
 export default function Input() {
   const [state, setState] = useState({
@@ -17,7 +17,6 @@ export default function Input() {
   const { balance, contract, fetchHistory } = useAccount();
   const { setToast } = useToasts();
   const [minimumBet, setMinimumBet] = useState(-1);
-  const [showYouWon, setShowYouWon] = useState(false);
 
   useEffect(() => {
     (async function fetchMinimumBet() {
@@ -64,7 +63,7 @@ export default function Input() {
 
     await flip(contract, state.isHead, Number(state.wager));
 
-    handleSetWager("")
+    handleSetWager("");
     fetchHistory();
   };
 
@@ -72,7 +71,7 @@ export default function Input() {
 
   return (
     <div className="flex flex-col gap-12">
-      {showYouWon ? <YouWon /> : null}
+      <FlipStatus />
 
       <ChooseInput isHead={state.isHead} handleSetIsHead={handleSetIsHead} />
       <EnterWager

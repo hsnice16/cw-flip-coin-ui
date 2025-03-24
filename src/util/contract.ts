@@ -1,32 +1,11 @@
 import {
   CW_DECIMALS,
   CW_FLIP_COIN_CONTRACT,
-  EVM_DECIMALS,
-  WASM_PRECOMPILE_ABI,
-  WASM_PRECOMPILE_ADDRESS,
+  DEFAULT_HISTORY_LOG_LIMIT,
+  FLIP_EVM_DECIMALS,
 } from "@/constant/value";
 
-import {
-  Contract,
-  ContractRunner,
-  InterfaceAbi,
-  toUtf8Bytes,
-  toUtf8String,
-} from "ethers";
-
-/**
- * The ABI for the Wasm precompile contract, used to create an Ethers contract.
- * @category Cosmos Interoperability
- */
-export const ETHERS_WASM_PRECOMPILE_ABI = WASM_PRECOMPILE_ABI as InterfaceAbi;
-
-export function getWasmPrecompileEthersV6Contract(runner: ContractRunner) {
-  return new Contract(
-    WASM_PRECOMPILE_ADDRESS,
-    ETHERS_WASM_PRECOMPILE_ABI,
-    runner
-  );
-}
+import { Contract, toUtf8Bytes, toUtf8String } from "ethers";
 
 async function queryContract(contract: Contract, queryMsg: string) {
   const queryResponse = await contract.query(
@@ -66,12 +45,16 @@ export async function getMinimumBet(contract: Contract | undefined) {
   return parsedResponse / 10 ** CW_DECIMALS;
 }
 
-export async function getHistoryLogs(contract: Contract | undefined) {
+export async function getHistoryLogs(
+  contract: Contract | undefined,
+  offset = 0,
+  limit = DEFAULT_HISTORY_LOG_LIMIT
+) {
   if (!contract) {
     return [];
   }
 
-  const queryMsg = { history_logs: {} };
+  const queryMsg = { history_logs: { offset, limit } };
   const parsedResponse = await queryContract(
     contract,
     JSON.stringify(queryMsg)
@@ -98,9 +81,23 @@ export async function flip(
         { amount: String(wager * 10 ** CW_DECIMALS), denom: "usei" },
       ])
     ),
-    { gasLimit: 1000_000, value: String(wager * 10 ** EVM_DECIMALS) }
+    {
+      gasLimit: 1000_000,
+      value: String(wager * 10 ** FLIP_EVM_DECIMALS * 10 ** CW_DECIMALS),
+    }
   );
 
   await executeResponse.wait();
-  console.log("executeResponse", executeResponse);
+}
+
+export async function getEvmAddress(
+  contract: Contract | undefined,
+  address: string
+) {
+  if (!contract) {
+    return address;
+  }
+
+  const evmAddress = await contract.getEvmAddr(address);
+  return evmAddress;
 }

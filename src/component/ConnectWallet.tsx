@@ -5,7 +5,6 @@ import { useToasts } from "@/context/ToastsContext";
 import { useState } from "react";
 import { useAccount } from "@/context/AccountContext";
 import { BrowserProvider } from "ethers";
-import { getWasmPrecompileEthersV6Contract } from "@/util/contract";
 
 import {
   getAccount,
@@ -15,6 +14,11 @@ import {
   revokePermission,
   switchToSeiTestnet,
 } from "@/util/wallet";
+
+import {
+  getAddressPrecompileEthersV6Contract,
+  getWasmPrecompileEthersV6Contract,
+} from "@sei-js/evm";
 
 export default function ConnectWallet() {
   const { setToast } = useToasts();
@@ -28,6 +32,7 @@ export default function ConnectWallet() {
     wallet: _wallet,
     setWallet,
     setContract,
+    setAddrContract,
   } = useAccount();
 
   const handleConnectWallet = async () => {
@@ -54,6 +59,9 @@ export default function ConnectWallet() {
 
         const contract = getWasmPrecompileEthersV6Contract(signer);
         setContract(contract);
+
+        const addrContract = getAddressPrecompileEthersV6Contract(signer);
+        setAddrContract(addrContract);
       } catch (err) {
         setToast({
           msg: (err as Error).message,

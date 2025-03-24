@@ -16,7 +16,7 @@ export default function History() {
   }, [contract]);
 
   return (
-    <div className="flex flex-col gap-4 self-end min-h-[314px]">
+    <div className="flex flex-col gap-4 self-end min-h-[314px] max-h-[514px] overflow-auto">
       <h2 className="font-bold text-[26px]">history log</h2>
 
       <table>
@@ -24,7 +24,7 @@ export default function History() {
           <tr>
             <th className="w-[102px] text-left">player</th>
             <th className="w-[52px] text-left">did_win</th>
-            <th className="w-[102px] text-right">wager</th>
+            <th className="w-[142px] text-right">wager (sei)</th>
           </tr>
         </thead>
 
@@ -53,7 +53,7 @@ export default function History() {
                     <td className="w-[52px]">
                       {_history.did_win ? "yes" : "no"}
                     </td>
-                    <td className="w-[102px] text-right">
+                    <td className="w-[142px] text-right">
                       {_history.wager / 10 ** CW_DECIMALS}
                     </td>
                   </tr>
