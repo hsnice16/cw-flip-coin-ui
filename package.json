@@ -21,7 +21,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "3",
-    "@tailwindcss/oxide": "4.0.15",
     "@tailwindcss/postcss": "4",
     "@types/node": "20",
     "@types/react": "19",
@@ -30,5 +29,8 @@
     "eslint-config-next": "15.2.2",
     "tailwindcss": "4",
     "typescript": "5"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-linux-arm64-gnu": "^4.0.1"
   }
 }
